@@ -1,9 +1,7 @@
 use std::io::stdin;
 
 fn main() {
-    let mut memory = Memory {
-        slots: vec![],
-    };
+    let mut memory = Memory { slots: vec![] };
     let mut prev_result: f64 = 0.0;
 
     for line in stdin().lines() {
@@ -19,16 +17,16 @@ fn main() {
         // メモリへの書き込み
         let is_memory = tokens[0].starts_with("mem");
         if is_memory && tokens[0].ends_with("+") {
-            add_and_print_memory(&mut memory, tokens[0], prev_result);
+            memory.add_and_print_memory(tokens[0], prev_result);
             continue;
         } else if is_memory && tokens[0].ends_with("-") {
-            add_and_print_memory(&mut memory, tokens[0], -prev_result);
+            memory.add_and_print_memory(tokens[0], -prev_result);
             continue;
         }
 
         // 計算
-        let left = eval_token(tokens[0], &memory);
-        let right = eval_token(tokens[2], &memory);
+        let left = memory.eval_token(tokens[0]);
+        let right = memory.eval_token(tokens[2]);
         let result = eval_expression(left, tokens[1], right);
 
         // 結果表示
@@ -46,37 +44,39 @@ struct Memory {
     slots: Vec<(String, f64)>,
 }
 
-fn add_and_print_memory(memory: &mut Memory, token: &str, prev_result: f64) {
-    let slot_name = &token[3..token.len() - 1];
-    for slot in memory.slots.iter_mut() {
-        if slot.0 == slot_name {
-            // メモリが見つかったので、値を更新・表示して終了
-            slot.1 += prev_result;
-            print_value(slot.1);
-            return;
-        }
-    }
-
-    // メモリが見つからなかったので、最後の要素を追加する
-    memory.slots.push((slot_name.to_string(), prev_result));
-
-    print_value(prev_result)
-}
-
-fn eval_token(token: &str, memory: &Memory) -> f64 {
-    if token.starts_with("mem") {
-        let slot_name = &token[3..];
-        for slot in &memory.slots {
+impl Memory {
+    fn add_and_print_memory(&mut self, token: &str, prev_result: f64) {
+        let slot_name = &token[3..token.len() - 1];
+        for slot in self.slots.iter_mut() {
             if slot.0 == slot_name {
-                // メモリが見つかったので、値を返して終了
-                return slot.1;
+                // メモリが見つかったので、値を更新・表示して終了
+                slot.1 += prev_result;
+                print_value(slot.1);
+                return;
             }
         }
 
-        // メモリが見つからなかったので、初期値を返す
-        0.0
-    } else {
-        token.parse().unwrap()
+        // メモリが見つからなかったので、最後の要素を追加する
+        self.slots.push((slot_name.to_string(), prev_result));
+
+        print_value(prev_result)
+    }
+
+    fn eval_token(&self, token: &str) -> f64 {
+        if token.starts_with("mem") {
+            let slot_name = &token[3..];
+            for slot in &self.slots {
+                if slot.0 == slot_name {
+                    // メモリが見つかったので、値を返して終了
+                    return slot.1;
+                }
+            }
+
+            // メモリが見つからなかったので、初期値を返す
+            0.0
+        } else {
+            token.parse().unwrap()
+        }
     }
 }
 
