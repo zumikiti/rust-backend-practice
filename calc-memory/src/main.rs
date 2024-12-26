@@ -1,7 +1,7 @@
 use std::io::stdin;
 
 fn main() {
-    let mut memory = Memory { slots: vec![] };
+    let mut memory = Memory::new();
     let mut prev_result: f64 = 0.0;
 
     for line in stdin().lines() {
@@ -45,6 +45,12 @@ struct Memory {
 }
 
 impl Memory {
+    fn new() -> Self {
+        Self {
+            slots: vec![],
+        }
+    }
+
     fn add_and_print_memory(&mut self, token: &str, prev_result: f64) {
         let slot_name = &token[3..token.len() - 1];
         for slot in self.slots.iter_mut() {
