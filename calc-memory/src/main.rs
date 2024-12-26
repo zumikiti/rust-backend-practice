@@ -25,8 +25,8 @@ fn main() {
         }
 
         // 計算
-        let left = eval_token(tokens[0], memories);
-        let right = eval_token(tokens[2], memories);
+        let left = eval_token(tokens[0], &memories);
+        let right = eval_token(tokens[2], &memories);
         let result = eval_expression(left, tokens[1], right);
 
         // 結果表示
@@ -40,13 +40,17 @@ fn print_value(value: f64) {
     println!(" => {}", value)
 }
 
-fn add_and_print_memory(memories: &mut Vec<f64>, token: &str, prev_result: f64) {
+fn add_and_print_memory(
+    memories: &mut [f64],
+    token: &str,
+    prev_result: f64,
+) {
     let slot_index: usize = token[3..token.len() - 1].parse().unwrap();
     memories[slot_index] += prev_result;
     print_value(memories[slot_index])
 }
 
-fn eval_token(token: &str, memories: Vec<f64>) -> f64 {
+fn eval_token(token: &str, memories: &[f64]) -> f64 {
     if token.starts_with("mem") {
         let slot_index: usize = token[3..].parse().unwrap();
         memories[slot_index]
