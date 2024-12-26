@@ -1,4 +1,7 @@
-use std::io::stdin;
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    io::stdin,
+};
 
 fn main() {
     let mut memory = Memory::new();
@@ -41,45 +44,40 @@ fn print_value(value: f64) {
 }
 
 struct Memory {
-    slots: Vec<(String, f64)>,
+    slots: HashMap<String, f64>,
 }
 
 impl Memory {
     fn new() -> Self {
         Self {
-            slots: vec![],
+            slots: HashMap::new(),
         }
     }
 
     fn add_and_print_memory(&mut self, token: &str, prev_result: f64) {
-        let slot_name = &token[3..token.len() - 1];
-        for slot in self.slots.iter_mut() {
-            if slot.0 == slot_name {
+        let slot_name = token[3..token.len() - 1].to_string();
+        match self.slots.entry(slot_name) {
+            Entry::Occupied(mut entry) => {
                 // メモリが見つかったので、値を更新・表示して終了
-                slot.1 += prev_result;
-                print_value(slot.1);
-                return;
+                *entry.get_mut() += prev_result;
+                print_value(*entry.get())
+            }
+            Entry::Vacant(entry) => {
+                // メモリが見つからなかったので、最後の要素を追加する
+                entry.insert(prev_result);
+                print_value(prev_result)
             }
         }
-
-        // メモリが見つからなかったので、最後の要素を追加する
-        self.slots.push((slot_name.to_string(), prev_result));
-
-        print_value(prev_result)
     }
 
     fn eval_token(&self, token: &str) -> f64 {
         if token.starts_with("mem") {
             let slot_name = &token[3..];
-            for slot in &self.slots {
-                if slot.0 == slot_name {
-                    // メモリが見つかったので、値を返して終了
-                    return slot.1;
-                }
-            }
-
-            // メモリが見つからなかったので、初期値を返す
-            0.0
+            // self.slots.get(slot_name) の戻り値は Option<&f64>
+            // Option の中身が参照のままで値が返せないので
+            // copied() で Option<f64> に変換
+            // また、メモリが見つからない場合の値として、 0.0 を設定
+            self.slots.get(slot_name).copied().unwrap_or(0.0)
         } else {
             token.parse().unwrap()
         }
