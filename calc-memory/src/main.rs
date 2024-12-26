@@ -39,10 +39,10 @@ fn main() {
             tokens[2].parse().unwrap()
         };
         let result = match tokens[1] {
-            "+" => add_value(left, right),
-            "-" => subtract_value(left, right),
-            "*" => multiply_value(left, right),
-            "/" => divide_value(left, right),
+            "+" => left + right,
+            "-" => left - right,
+            "*" => left * right,
+            "/" => left / right,
             _ => {
                 // 入力が正しい場合は、ここに来ない
                 unreachable!()
@@ -57,21 +57,5 @@ fn main() {
 
     fn print_value(value: f64) {
         println!(" => {}", value)
-    }
-
-    fn add_value(left: f64, right: f64) -> f64 {
-        left + right
-    }
-
-    fn subtract_value(left: f64, right: f64) -> f64 {
-        left - right
-    }
-
-    fn multiply_value(left: f64, right: f64) -> f64 {
-        left * right
-    }
-
-    fn divide_value(left: f64, right: f64) -> f64 {
-        left / right
     }
 }
