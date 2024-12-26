@@ -12,6 +12,8 @@ struct Card {
     rank: i32,
 }
 
+use std::usize;
+
 use rand::prelude::SliceRandom;
 
 fn main() {
@@ -34,6 +36,27 @@ fn main() {
 
     for _ in 0..5 {
         hand.push(deck.pop().unwrap());
+    }
+
+    // 手札をソート
+    hand.sort_by(|a, b| a.rank.cmp(&b.rank));
+
+    // 手札表示
+    println!("----Hand----");
+    for card in &hand {
+        println!("{:?}: {:}", card.suit, card.rank);
+    }
+
+    println!("入れ替えたいカードの番号を入力してください（例： 1 2 3）");
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap();
+
+    let numbers: Vec<usize> = input
+        .split_whitespace() // 空白で分割
+        .map(|x| x.parse().unwrap()) // 数値に変換
+        .collect::<Vec<usize>>(); // Vec に変換
+    for number in numbers {
+        hand[number - 1] = deck.pop().unwrap();
     }
 
     // 手札をソート
