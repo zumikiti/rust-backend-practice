@@ -7,7 +7,7 @@ fn main() {
         let quiz_mode = rand::thread_rng().gen_range(1..=2);
 
         match quiz_mode {
-            1 => {
+            1 => loop {
                 let op1 = rand::thread_rng().gen_range(0..100);
                 let op2 = rand::thread_rng().gen_range(0..100);
 
@@ -20,11 +20,12 @@ fn main() {
                 if ans_input == op1 + op2 {
                     println!("正解");
                     mun_of_current += 1;
-                } else {
-                    println!("不正解");
+                    break;
                 }
+
+                println!("不正解");
             }
-            2 => {
+            2 => loop {
                 let op1 = rand::thread_rng().gen_range(0..100);
                 let op2 = rand::thread_rng().gen_range(0..100);
 
@@ -38,9 +39,10 @@ fn main() {
                 if ans_input == op1 - op2 {
                     println!("正解");
                     mun_of_current += 1;
-                } else {
-                    println!("不正解");
+                    break;
                 }
+
+                println!("不正解");
             }
             _ => unreachable!(),
         }
