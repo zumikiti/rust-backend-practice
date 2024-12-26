@@ -1,4 +1,5 @@
 use std::{
+    char,
     collections::{hash_map::Entry, HashMap},
     io::stdin,
 };
@@ -15,27 +16,34 @@ fn main() {
         }
 
         // 空白分割
-        let tokens: Vec<&str> = line.split(char::is_whitespace).collect();
+        let tokens = Token::split(&line);
 
-        // メモリへの書き込み
-        let is_memory = tokens[0].starts_with("mem");
-        if is_memory && tokens[0].ends_with("+") {
-            memory.add_and_print_memory(tokens[0], prev_result);
-            continue;
-        } else if is_memory && tokens[0].ends_with("-") {
-            memory.add_and_print_memory(tokens[0], -prev_result);
-            continue;
+        // 式の評価
+        match &tokens[0] {
+            Token::MemoryPlus(memory_name) => {
+                // メモリへの加算
+                let memory_name = memory_name.to_string();
+                let result = memory.add(memory_name, prev_result);
+                print_value(result)
+            }
+            Token::MemoryMinus(memory_name) => {
+                // メモリへの減算
+                let memory_name = memory_name.to_string();
+                let result = memory.add(memory_name, -prev_result);
+                print_value(result)
+            }
+            _ => {
+                // 式の値を計算
+                let left = eval_token(&tokens[0], &memory);
+                let right = eval_token(&tokens[2], &memory);
+                let result = eval_expression(left, &tokens[1], right);
+
+                // 結果表示
+                print_value(result);
+
+                prev_result = result
+            }
         }
-
-        // 計算
-        let left = memory.eval_token(tokens[0]);
-        let right = memory.eval_token(tokens[2]);
-        let result = eval_expression(left, tokens[1], right);
-
-        // 結果表示
-        print_value(result);
-
-        prev_result = result
     }
 }
 
@@ -54,42 +62,89 @@ impl Memory {
         }
     }
 
-    fn add_and_print_memory(&mut self, token: &str, prev_result: f64) {
-        let slot_name = token[3..token.len() - 1].to_string();
+    fn add(&mut self, slot_name: String, prev_result: f64) -> f64 {
         match self.slots.entry(slot_name) {
             Entry::Occupied(mut entry) => {
                 // メモリが見つかったので、値を更新・表示して終了
                 *entry.get_mut() += prev_result;
-                print_value(*entry.get())
+                *entry.get()
             }
             Entry::Vacant(entry) => {
                 // メモリが見つからなかったので、最後の要素を追加する
                 entry.insert(prev_result);
-                print_value(prev_result)
+                prev_result
             }
         }
     }
 
-    fn eval_token(&self, token: &str) -> f64 {
-        if token.starts_with("mem") {
-            let slot_name = &token[3..];
-            // self.slots.get(slot_name) の戻り値は Option<&f64>
-            // Option の中身が参照のままで値が返せないので
-            // copied() で Option<f64> に変換
-            // また、メモリが見つからない場合の値として、 0.0 を設定
-            self.slots.get(slot_name).copied().unwrap_or(0.0)
-        } else {
-            token.parse().unwrap()
+    fn get(&self, slot_name: &str) -> f64 {
+        self.slots.get(slot_name).copied().unwrap_or(0.0)
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum Token {
+    Number(f64),
+    MemoryRef(String),
+    MemoryPlus(String),
+    MemoryMinus(String),
+    Plus,
+    Minus,
+    Asterisk,
+    Slash,
+}
+
+impl Token {
+    fn parse(value: &str) -> Self {
+        match value {
+            "+" => Self::Plus,
+            "-" => Self::Minus,
+            "*" => Self::Asterisk,
+            "/" => Self::Slash,
+            _ if value.starts_with("mem") => {
+                let mut memory_name = value[3..].to_string();
+                if value.ends_with("+") {
+                    memory_name.pop();
+                    Self::MemoryPlus(memory_name)
+                } else if value.ends_with("-") {
+                    memory_name.pop();
+                    Self::MemoryMinus(memory_name)
+                } else {
+                    Self::MemoryRef(memory_name)
+                }
+            }
+            _ => Self::Number(value.parse().unwrap()),
+        }
+    }
+
+    fn split(text: &str) -> Vec<Self> {
+        text.split(char::is_whitespace).map(Self::parse).collect()
+    }
+}
+
+fn eval_token(token: &Token, memory: &Memory) -> f64 {
+    match token {
+        Token::Number(value) => {
+            // 数値を表しているので、その値を返す
+            *value
+        }
+        Token::MemoryRef(memory_name) => {
+            // メモリを参照しているので、メモリの値を返す
+            memory.get(memory_name)
+        }
+        _ => {
+            // 縫う力が正しいなら、ここは通らない
+            unreachable!()
         }
     }
 }
 
-fn eval_expression(left: f64, operator: &str, right: f64) -> f64 {
+fn eval_expression(left: f64, operator: &Token, right: f64) -> f64 {
     match operator {
-        "+" => left + right,
-        "-" => left - right,
-        "*" => left * right,
-        "/" => left / right,
+        Token::Plus => left + right,
+        Token::Minus => left - right,
+        Token::Asterisk => left * right,
+        Token::Slash => left / right,
         _ => {
             // 入力が正しい場合は、ここに来ない
             unreachable!()
