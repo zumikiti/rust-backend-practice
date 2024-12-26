@@ -1,6 +1,12 @@
+use clap::Parser;
+
+#[derive(Parser)]
+#[clap(version = "1.0")]
+struct Args {
+    arg1: String,
+    arg2: String,
+}
+
 fn main() {
-    // コマンドラインの引数一覧出力
-    for arg in std::env::args() {
-        println!("{}", arg)
-    }
+    let _args = Args::parse();
 }
