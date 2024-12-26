@@ -12,6 +12,8 @@ struct Card {
     rank: i32,
 }
 
+use rand::prelude::SliceRandom;
+
 fn main() {
     let mut deck: Vec<Card> = Vec::new();
     let suits = [Suit::Club, Suit::Diamond, Suit::Heart, Suit::Spade];
@@ -23,5 +25,8 @@ fn main() {
         }
     }
 
+    // デッキをシャッフル
+    let mut rng = rand::thread_rng();
+    deck.shuffle(&mut rng);
     println!("{:?}", deck)
 }
