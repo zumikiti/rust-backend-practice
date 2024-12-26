@@ -12,8 +12,8 @@ fn main() {
         let tokens: Vec<&str> = line.split(char::is_whitespace).collect();
 
         // 計算
-        let left:f64 = tokens[0].parse().unwrap();
-        let right:f64 = tokens[2].parse().unwrap();
+        let left: f64 = tokens[0].parse().unwrap();
+        let right: f64 = tokens[2].parse().unwrap();
         let result = match tokens[1] {
             "+" => add_value(left, right),
             "-" => subtract_value(left, right),
@@ -34,18 +34,18 @@ fn main() {
     }
 
     fn add_value(left: f64, right: f64) -> f64 {
-      left + right
+        left + right
     }
 
     fn subtract_value(left: f64, right: f64) -> f64 {
-      left - right
+        left - right
     }
 
     fn multiply_value(left: f64, right: f64) -> f64 {
-      left * right
+        left * right
     }
 
     fn divide_value(left: f64, right: f64) -> f64 {
-      left / right
+        left / right
     }
 }
