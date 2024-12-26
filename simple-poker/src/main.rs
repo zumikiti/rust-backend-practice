@@ -13,8 +13,15 @@ struct Card {
 }
 
 fn main() {
-    let suit = Suit::Club;
-    let rank = 1;
-    let card = Card { suit, rank };
-    println!("{:?}", card);
+    let mut deck: Vec<Card> = Vec::new();
+    let suits = [Suit::Club, Suit::Diamond, Suit::Heart, Suit::Spade];
+
+    // デッキ生成
+    for suit in suits {
+        for rank in 1..=13 {
+            deck.push(Card { suit, rank });
+        }
+    }
+
+    println!("{:?}", deck)
 }
