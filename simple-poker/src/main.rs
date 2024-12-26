@@ -28,5 +28,20 @@ fn main() {
     // デッキをシャッフル
     let mut rng = rand::thread_rng();
     deck.shuffle(&mut rng);
-    println!("{:?}", deck)
+
+    // 手札
+    let mut hand: Vec<Card> = Vec::new();
+
+    for _ in 0..5 {
+        hand.push(deck.pop().unwrap());
+    }
+
+    // 手札をソート
+    hand.sort_by(|a, b| a.rank.cmp(&b.rank));
+
+    // 手札表示
+    println!("----Hand----");
+    for card in &hand {
+        println!("{:?}: {:}", card.suit, card.rank);
+    }
 }
