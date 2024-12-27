@@ -2,7 +2,7 @@ use std::fs::OpenOptions;
 
 use chrono::NaiveDate;
 use clap::{Args, Parser, Subcommand};
-use csv::Writer;
+use csv::{Reader, Writer};
 
 #[derive(Parser)]
 #[clap(version = "1.0")]
@@ -20,7 +20,7 @@ enum Command {
     /// 口座から出金する
     Withdraw(WithdrawArgs),
     /// CSV からインポートする
-    Import,
+    Import(ImportAges),
     /// レポートを出力する
     Report,
 }
@@ -93,6 +93,30 @@ impl WithdrawArgs {
     }
 }
 
+#[derive(Args)]
+struct ImportAges {
+    src_file_name: String, // インモートするファイル
+    dst_account_name: String, // インポート先として登録する口座名
+}
+
+impl ImportAges {
+    fn run(&self) {
+        let open_option = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(format!("{}.csv", self.dst_account_name))
+            .unwrap();
+        let mut writer = Writer::from_writer(open_option);
+        let mut reader = Reader::from_path(&self.src_file_name).unwrap();
+        for result in reader.records() {
+            // Readder は先頭行をヘッダーとして扱うので、ここで読まれるのは2ぎょうめから
+            let record = result.unwrap();
+            writer.write_record(&record).unwrap();
+        }
+        writer.flush().unwrap()
+    }
+}
+
 fn main() {
     let args = App::parse();
 
@@ -100,7 +124,7 @@ fn main() {
         Command::New(args) => args.run(),
         Command::Deposit(args) => args.run(),
         Command::Withdraw(args) => args.run(),
-        Command::Import => unimplemented!(),
+        Command::Import(args) => args.run(),
         Command::Report => unimplemented!(),
     }
 }
