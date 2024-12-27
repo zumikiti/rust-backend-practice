@@ -1,3 +1,5 @@
+use std::fs::OpenOptions;
+
 use clap::{Args, Parser, Subcommand};
 use csv::Writer;
 
@@ -41,9 +43,20 @@ fn main() {
 
     match args.command {
         Command::New(args) => args.run(),
-        Command::Deposit => unimplemented!(),
+        Command::Deposit => deposit(),
         Command::Withdraw => unimplemented!(),
         Command::Import => unimplemented!(),
         Command::Report => unimplemented!(),
     }
+}
+
+fn deposit() {
+    let open_option = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open("口座１.csv")
+        .unwrap();
+    let mut writer = Writer::from_writer(open_option);
+    writer.write_record(["1", "2", "3"]).unwrap();
+    writer.flush().unwrap()
 }
