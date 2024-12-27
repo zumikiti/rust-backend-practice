@@ -1,5 +1,6 @@
 use std::fs::OpenOptions;
 
+use chrono::NaiveDate;
 use clap::{Args, Parser, Subcommand};
 use csv::Writer;
 
@@ -15,7 +16,7 @@ enum Command {
     /// 新しい講座を作る
     New(NewArgs),
     /// 口座に入金する
-    Deposit,
+    Deposit(DepositArgs),
     /// 口座から出金する
     Withdraw,
     /// CSV からインポートする
@@ -38,25 +39,41 @@ impl NewArgs {
     }
 }
 
+#[derive(Args)]
+struct DepositArgs {
+    account_name: String,
+    date: NaiveDate,
+    usage: String,
+    amount: u32,
+}
+
+impl DepositArgs {
+    fn run(&self) {
+        let open_option = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(format!("{}.csv", self.account_name))
+            .unwrap();
+        let mut writer = Writer::from_writer(open_option);
+        writer
+            .write_record(&[
+                self.date.format("%Y-%m-%d").to_string(),
+                self.usage.to_string(),
+                self.amount.to_string(),
+            ])
+            .unwrap();
+        writer.flush().unwrap()
+    }
+}
+
 fn main() {
     let args = App::parse();
 
     match args.command {
         Command::New(args) => args.run(),
-        Command::Deposit => deposit(),
+        Command::Deposit(args) => args.run(),
         Command::Withdraw => unimplemented!(),
         Command::Import => unimplemented!(),
         Command::Report => unimplemented!(),
     }
-}
-
-fn deposit() {
-    let open_option = OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open("口座１.csv")
-        .unwrap();
-    let mut writer = Writer::from_writer(open_option);
-    writer.write_record(["1", "2", "3"]).unwrap();
-    writer.flush().unwrap()
 }
