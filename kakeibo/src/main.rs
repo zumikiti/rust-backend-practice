@@ -2,7 +2,8 @@ use std::fs::OpenOptions;
 
 use chrono::NaiveDate;
 use clap::{Args, Parser, Subcommand};
-use csv::{Reader, Writer};
+use csv::{Reader, Writer, WriterBuilder};
+use serde::{Deserialize, Serialize};
 
 #[derive(Parser)]
 #[clap(version = "1.0")]
@@ -95,7 +96,7 @@ impl WithdrawArgs {
 
 #[derive(Args)]
 struct ImportAges {
-    src_file_name: String, // インモートするファイル
+    src_file_name: String,    // インモートするファイル
     dst_account_name: String, // インポート先として登録する口座名
 }
 
@@ -106,15 +107,29 @@ impl ImportAges {
             .append(true)
             .open(format!("{}.csv", self.dst_account_name))
             .unwrap();
-        let mut writer = Writer::from_writer(open_option);
+        let mut writer = WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(open_option);
         let mut reader = Reader::from_path(&self.src_file_name).unwrap();
-        for result in reader.records() {
+        for result in reader.deserialize() {
             // Readder は先頭行をヘッダーとして扱うので、ここで読まれるのは2ぎょうめから
-            let record = result.unwrap();
-            writer.write_record(&record).unwrap();
+            let record: Record = result.unwrap();
+            writer.serialize(record).unwrap();
         }
         writer.flush().unwrap()
     }
+}
+
+#[derive(Serialize, Deserialize)]
+struct Record {
+    日付: NaiveDate,
+    用途: String,
+    金額: i32,
+}
+
+#[derive(Args)]
+struct ReportArgs {
+    files: Vec<String>,
 }
 
 fn main() {
