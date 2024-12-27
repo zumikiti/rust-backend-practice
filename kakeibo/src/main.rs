@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 use csv::Writer;
 
 #[derive(Parser)]
@@ -11,7 +11,7 @@ struct App {
 #[derive(Subcommand)]
 enum Command {
     /// 新しい講座を作る
-    New,
+    New(NewArgs),
     /// 口座に入金する
     Deposit,
     /// 口座から出金する
@@ -22,23 +22,28 @@ enum Command {
     Report,
 }
 
+#[derive(Args)]
+struct NewArgs {
+    account_name: String,
+}
+
+impl NewArgs {
+    fn run(&self) {
+        let file_name = format!("{}.csv", self.account_name);
+        let mut witer = Writer::from_path(file_name).unwrap();
+        witer.write_record(["日付", "用途", "金額"]).unwrap();
+        witer.flush().unwrap()
+    }
+}
+
 fn main() {
     let args = App::parse();
 
     match args.command {
-        Command::New => new(),
+        Command::New(args) => args.run(),
         Command::Deposit => unimplemented!(),
         Command::Withdraw => unimplemented!(),
         Command::Import => unimplemented!(),
         Command::Report => unimplemented!(),
     }
-}
-
-fn new() {
-    // accounts.csv という名前で csv ファイルを作成する
-    let mut witer = Writer::from_path("accounts.csv").unwrap();
-    witer
-        .write_record(["日付", "用途", "金額"])
-        .unwrap();
-    witer.flush().unwrap()
 }
