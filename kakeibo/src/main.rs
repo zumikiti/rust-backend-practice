@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use csv::Writer;
 
 #[derive(Parser)]
 #[clap(version = "1.0")]
@@ -22,5 +23,22 @@ enum Command {
 }
 
 fn main() {
-    let _args = App::parse();
+    let args = App::parse();
+
+    match args.command {
+        Command::New => new(),
+        Command::Deposit => unimplemented!(),
+        Command::Withdraw => unimplemented!(),
+        Command::Import => unimplemented!(),
+        Command::Report => unimplemented!(),
+    }
+}
+
+fn new() {
+    // accounts.csv という名前で csv ファイルを作成する
+    let mut witer = Writer::from_path("accounts.csv").unwrap();
+    witer
+        .write_record(["日付", "用途", "金額"])
+        .unwrap();
+    witer.flush().unwrap()
 }
