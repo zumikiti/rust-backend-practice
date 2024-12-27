@@ -1,4 +1,4 @@
-use std::fs::OpenOptions;
+use std::{collections::HashMap, fs::OpenOptions};
 
 use chrono::NaiveDate;
 use clap::{Args, Parser, Subcommand};
@@ -23,7 +23,7 @@ enum Command {
     /// CSV からインポートする
     Import(ImportAges),
     /// レポートを出力する
-    Report,
+    Report(ReportArgs),
 }
 
 #[derive(Args)]
@@ -132,6 +132,25 @@ struct ReportArgs {
     files: Vec<String>,
 }
 
+impl ReportArgs {
+    fn run(&self) {
+        let mut map = HashMap::new();
+        for file in &self.files {
+            let mut reader = Reader::from_path(file).unwrap();
+            for result in reader.records() {
+                let record = result.unwrap();
+                let amount: i32 = record[2].parse().unwrap();
+                let date: NaiveDate = record[0].parse().unwrap();
+                let sum = map.entry(date.format("%Y-%m").to_string()).or_insert(0);
+
+                *sum += amount;
+            }
+        }
+
+        println!("{:?}", map)
+    }
+}
+
 fn main() {
     let args = App::parse();
 
@@ -140,6 +159,6 @@ fn main() {
         Command::Deposit(args) => args.run(),
         Command::Withdraw(args) => args.run(),
         Command::Import(args) => args.run(),
-        Command::Report => unimplemented!(),
+        Command::Report(args) => args.run(),
     }
 }
