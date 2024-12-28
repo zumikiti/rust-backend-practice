@@ -21,3 +21,7 @@ Executed in   10.53 secs    fish           external
    usr time   33.73 secs   78.00 micros   33.73 secs
    sys time    0.13 secs  807.00 micros    0.13 secs
 ```
+
+rayon クレートをしようすると、裏でCPUやメモリ数をチェックして最大限までスレッドを設定してくれる。
+ただ、最大限活用しても速度はさほど変化しない。
+そのため、実際にはスレッド数の設定し細かくチューニングする必要はある。
